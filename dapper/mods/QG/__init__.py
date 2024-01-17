@@ -17,10 +17,12 @@ import sys
 from pathlib import Path
 
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
 
 import dapper.mods as modelling
 import dapper.tools.liveplotting as LP
+import time
 
 #########################
 # Model
@@ -165,12 +167,26 @@ def gen_sample(model, nSamples, SpinUp, Spacing):
     sample    = simulator(np.zeros(Nx), K, 0.0, model.prms["dtout"])
     return sample[SpinUp::Spacing]
 
+def gen_complete_run(model, nSamples):
+    simulator = modelling.with_recursion(model.step, prog="Simulating")
+    K         = nSamples
+    Nx        = np.prod(shape)  # total state length
+    sample    = simulator(np.zeros(Nx), K, 0.0, model.prms["dtout"])
+    return sample
 
-sample_filename = modelling.rc.dirs.samples/'QG_samples.npz'
+
+#sample_filename = modelling.rc.dirs.samples/'QG_samples.npz'
+iterations = 10000
+sample_filename = modelling.rc.dirs.simulations/f'QG_samples_{iterations}.npz'
+
 if (not sample_filename.is_file()) and ("pdoc" not in sys.modules):
     print('Did not find sample file', sample_filename,
           'for experiment initialization. Generating...')
-    sample = gen_sample(model_config("sample_generation", {}), 400, 700, 10)
+    #sample = gen_sample(model_config("sample_generation", {}), 4000, 700, 1)
+    t1 = time.time()
+    sample = gen_complete_run(model_config("sample_generation", {}), iterations)
+    t2 = time.time()
+    print(f'Time taken: {round(t2-t1,2)}')
     np.savez(sample_filename, sample=sample)
 
 
