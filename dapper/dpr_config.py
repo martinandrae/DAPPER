@@ -53,8 +53,8 @@ else:
     x = Path(x)
 rc.dirs.data = x / "dpr_data"
 rc.dirs.samples = rc.dirs.data / "samples"
-rc.dirs.nobackup = Path("/nobackup/smhid20/users/sm_maran")
-rc.dirs.simulations = rc.dirs.nobackup / "dpr_data" / "simulations"
+#rc.dirs.nobackup = Path("/nobackup/smhid20/users/sm_maran")
+#rc.dirs.simulations = rc.dirs.nobackup / "dpr_data" / "simulations"
 
 # Expanduser, create dir
 for d in rc.dirs:
