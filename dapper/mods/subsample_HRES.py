@@ -3,8 +3,12 @@ import numpy as np
 from pathlib import Path
 
 iterations = 101000
-input_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{iterations}.npz')
-output_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_SUBS_{iterations}.npy')
+number = 4
+
+input_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{iterations}_{number}.npy')
+output_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_SUBS_{iterations}_{number}.npy')
+
+print("Script started")
 
 def subsample(x):
     x = scipy.signal.decimate(x, 2, n=None, ftype='fir', axis=0)
@@ -12,7 +16,7 @@ def subsample(x):
     return x
 
 def generate_SUBS():
-    X_lp = np.load(input_filename)['sample'].astype('float32')
+    X_lp = np.load(input_filename)#['sample'].astype('float32')
 
     if X_lp.shape[1] != (2**7+1)**2:
         print("Input has wrong dimensions")
@@ -26,3 +30,4 @@ def generate_SUBS():
     np.save(output_filename, X_lp)
 
 generate_SUBS()
+print("Script finished")

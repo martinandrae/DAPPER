@@ -3,37 +3,22 @@ from pathlib import Path
 import scipy
 import QG
 
-iterations = 100
+spinup=1000
+old_iterations = 101000
+iterations = old_iterations-spinup
 
-sample = QG.gen_complete_run(QG.model_config("sample_generation", {}), iterations)
+number = 4
 
-#local_data_filename = Path(f'/home/sm_maran/dpr_data/samples/LRES_NWP_{iterations}')
-#disk_data_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{iterations}')
+disk_new_data_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{old_iterations}_{number}')
+disk_old_data_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{old_iterations}_{number-1}.npy')
 
-#sample_filename = disk_data_filename
-#np.save(sample_filename, sample)
+X_lp = np.load(disk_old_data_filename)
 
-input_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{iterations}.npz')
-output_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_SUBS_{iterations}.npy')
+X_lp = X_lp[-1,:]
 
-def subsample(x):
-    x = scipy.signal.decimate(x, 2, n=None, ftype='fir', axis=0)
-    x = scipy.signal.decimate(x, 2, n=None, ftype='fir', axis=1)
-    return x
+model = QG.model_config("MY_step_model", {})
+simulator = QG.modelling.with_recursion(model.step, prog=False)
 
-def generate_SUBS():
-    print(sample.shape)
-    X_lp = sample#np.load(input_filename)['sample'].astype('float32')
+sample = simulator(X_lp, iterations, 0.0, model.prms["dtout"])
 
-    if X_lp.shape[1] != (2**7+1)**2:
-        print("Input has wrong dimensions")
-        return
-
-    X_lp = np.array([X_lp[i].reshape((2**7+1,2**7+1)) for i in range(X_lp.shape[0])])
-
-    X_lp = np.array([subsample(x) for x in X_lp])
-    X_lp = X_lp.reshape((X_lp.shape[0], (X_lp.shape[1])*(X_lp.shape[2])))
-
-    np.save(output_filename, X_lp)
-
-generate_SUBS()
+np.save(disk_new_data_filename, sample)
