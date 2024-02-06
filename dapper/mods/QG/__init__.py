@@ -17,10 +17,14 @@ import sys
 from pathlib import Path
 
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
 
 import dapper.mods as modelling
 import dapper.tools.liveplotting as LP
+import time
+
+high_resolution = False
 
 #########################
 # Model
@@ -80,7 +84,10 @@ class model_config:
     @property
     def f90(self):
         try:
-            from .f90.py_mod import interface_mod
+            if high_resolution:
+                from .f90.py_mod import interface_mod
+            else:
+                from .f90.py_mod_lres import interface_mod
             return interface_mod
         except ImportError as error:
             error.msg = error.msg + (
@@ -134,7 +141,10 @@ class model_config:
 NX1 = 2
 NY1 = 2
 # Resolution level -- copied MREFIN from parameters.f90
-res = 7
+if high_resolution:
+    res =  7
+else:
+    res = 6
 # Grid lengths.
 nx = NX1 * 2 ** (res - 1) + 1  # (axis=1)
 ny = NY1 * 2 ** (res - 1) + 1  # (axis=0)
@@ -165,12 +175,28 @@ def gen_sample(model, nSamples, SpinUp, Spacing):
     sample    = simulator(np.zeros(Nx), K, 0.0, model.prms["dtout"])
     return sample[SpinUp::Spacing]
 
+def gen_complete_run(model, nSamples):
+    simulator = modelling.with_recursion(model.step, prog="Simulating")
+    K         = nSamples
+    Nx        = np.prod(shape)  # total state length
+    sample    = simulator(np.zeros(Nx), K, 0.0, model.prms["dtout"])
+    return sample
 
-sample_filename = modelling.rc.dirs.samples/'QG_samples.npz'
-if (not sample_filename.is_file()) and ("pdoc" not in sys.modules):
+
+iterations = 101000
+
+if high_resolution:
+    sample_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{iterations}.npz')
+else:
+    sample_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_LRES_{iterations}.npz')
+
+if high_resolution and (not sample_filename.is_file()) and ("pdoc" not in sys.modules):
     print('Did not find sample file', sample_filename,
           'for experiment initialization. Generating...')
-    sample = gen_sample(model_config("sample_generation", {}), 400, 700, 10)
+    t1 = time.time()
+    sample = gen_complete_run(model_config("sample_generation", {}), iterations)
+    t2 = time.time()
+    print(f'Time taken: {round(t2-t1,2)}')
     np.savez(sample_filename, sample=sample)
 
 
