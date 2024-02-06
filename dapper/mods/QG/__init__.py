@@ -24,7 +24,7 @@ import dapper.mods as modelling
 import dapper.tools.liveplotting as LP
 import time
 
-high_resolution = False
+high_resolution = True
 
 #########################
 # Model

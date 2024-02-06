@@ -3,15 +3,15 @@ from pathlib import Path
 import scipy
 import QG
 
-iterations = 101000
+iterations = 100
 
 sample = QG.gen_complete_run(QG.model_config("sample_generation", {}), iterations)
 
 #local_data_filename = Path(f'/home/sm_maran/dpr_data/samples/LRES_NWP_{iterations}')
-disk_data_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{iterations}')
+#disk_data_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{iterations}')
 
-sample_filename = disk_data_filename
-np.save(sample_filename, sample)
+#sample_filename = disk_data_filename
+#np.save(sample_filename, sample)
 
 input_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{iterations}.npz')
 output_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_SUBS_{iterations}.npy')
@@ -22,7 +22,8 @@ def subsample(x):
     return x
 
 def generate_SUBS():
-    X_lp = np.load(input_filename)['sample'].astype('float32')
+    print(sample.shape)
+    X_lp = sample#np.load(input_filename)['sample'].astype('float32')
 
     if X_lp.shape[1] != (2**7+1)**2:
         print("Input has wrong dimensions")
