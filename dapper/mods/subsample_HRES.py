@@ -1,9 +1,15 @@
 import scipy
 import numpy as np
 from pathlib import Path
+import argparse
 
 iterations = 101000
-number = 4
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--number", type=int, default=1, help="Number flag")
+args = parser.parse_args()
+
+number = args.number
 
 input_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_HRES_{iterations}_{number}.npy')
 output_filename = Path(f'/nobackup/smhid20/users/sm_maran/dpr_data/simulations/QG_samples_SUBS_{iterations}_{number}.npy')
